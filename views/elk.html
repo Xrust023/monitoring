@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELK Stack Overview</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    h1 { color: #333; }
+    .component { margin-bottom: 20px; }
+    .component h2 { color: #0073e6; }
+  </style>
+</head>
+<body>
+  <h1>Welcome to the ELK Stack Overview</h1>
+  <p id="elk-description">Loading information...</p>
+  <div id="elk-components"></div>
+
+  <script>
+    // Fetch ELK stack info from the backend
+    fetch('/api/elk-info')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('elk-description').textContent = data.description;
+
+        const componentsContainer = document.getElementById('elk-components');
+        data.components.forEach(component => {
+          const div = document.createElement('div');
+          div.className = 'component';
+          div.innerHTML = `<h2>${component.name}</h2><p>${component.description}</p>`;
+          componentsContainer.appendChild(div);
+        });
+      })
+      .catch(err => {
+        document.getElementById('elk-description').textContent = 'Error loading ELK information';
+      });
+  </script>
+</body>
+</html>
