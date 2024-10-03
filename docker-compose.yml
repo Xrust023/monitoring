@@ -1,7 +1,8 @@
 version: '3.7'
 
 services:
-  app:
+  app-js:
+    container_name: app-js
     build: .
     ports:
       - "3000:3000"
@@ -10,23 +11,61 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - elk
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./privkey.pem:/etc/nginx/privkey.pem
+      - ./fullchain.pem:/etc/nginx/fullchain.pem
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+    networks:
+      - elk
 
   elasticsearch:
     image: elasticsearch:7.10.1
+    container_name: elastic-search
     environment:
       - discovery.type=single-node
     ports:
       - "9200:9200"
       - "9300:9300"
+    networks:
+      - elk
 
   logstash:
     image: logstash:7.10.1
+    container_name: logstash
     ports:
-      - "5000:5000"
+      - "5044:5044"
     volumes:
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - elk
 
   kibana:
     image: kibana:7.10.1
+    container_name: kibana
     ports:
       - "5601:5601"
+    networks:
+      - elk
+
+  filebeat:
+    image: elastic/filebeat:7.10.1
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/log:/var/log # Пример: подключаем логи контейнеров или системные логи хоста
+    networks:
+      - elk
+
+networks:
+  elk:
+    driver: bridge
